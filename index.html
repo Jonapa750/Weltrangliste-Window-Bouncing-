@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Meine Rangliste</title>
+
+<style>
+
+body{
+    margin:0;
+    font-family:Arial,sans-serif;
+    background:#222;
+    color:white;
+}
+
+header{
+    background:#333;
+    padding:15px;
+    text-align:center;
+    font-size:24px;
+    font-weight:bold;
+}
+
+#top{
+    display:flex;
+    gap:10px;
+    padding:10px;
+}
+
+#nameInput{
+    flex:1;
+    padding:10px;
+    font-size:16px;
+}
+
+button{
+    cursor:pointer;
+}
+
+#addBtn{
+
+    padding:10px 15px;
+    font-size:18px;
+
+}
+
+#resetBtn{
+
+    width:100%;
+    margin-top:10px;
+    padding:12px;
+    background:#d32f2f;
+    color:white;
+    border:none;
+    font-size:16px;
+
+}
+
+#list{
+
+    padding:10px;
+
+}
+
+.row{
+
+    display:flex;
+    align-items:center;
+    gap:8px;
+
+    background:#444;
+
+    margin-bottom:8px;
+
+    padding:10px;
+
+    border-radius:10px;
+
+}
+
+.place{
+
+    width:35px;
+    font-weight:bold;
+    text-align:center;
+
+}
+
+.player{
+
+    flex:1;
+
+}
+
+.player input{
+
+    width:100%;
+    padding:8px;
+
+}
+
+.score{
+
+    width:35px;
+    text-align:center;
+    font-size:20px;
+    font-weight:bold;
+
+}
+
+.small{
+
+    width:38px;
+    height:38px;
+    font-size:20px;
+
+}
+
+.gold{
+background:#d4af37;
+color:black;
+}
+
+.silver{
+background:#c0c0c0;
+color:black;
+}
+
+.bronze{
+background:#cd7f32;
+color:white;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+
+🏆 Meine Rangliste
+
+</header>
+
+<div id="top">
+
+<input
+id="nameInput"
+placeholder="Neuen Namen eingeben">
+
+<button
+id="addBtn"
+onclick="addPlayer()">
+
+➕
+
+</button>
+
+</div>
+
+<div id="list">
+
+</div>
+
+<button
+id="resetBtn"
+onclick="resetAll()">
+
+Alles zurücksetzen
+
+</button>
+
+<script>
+  let players=[];
+
+function save(){
+    localStorage.setItem("ranking",JSON.stringify(players));
+}
+
+function load(){
+    const data=localStorage.getItem("ranking");
+    if(data){
+        players=JSON.parse(data);
+    }
+    render();
+}
+
+function addPlayer(){
+
+    const input=document.getElementById("nameInput");
+    const name=input.value.trim();
+
+    if(name=="") return;
+
+    players.push({
+        name:name,
+        score:0
+    });
+
+    input.value="";
+
+    sortPlayers();
+
+}
+
+function changeScore(index,value){
+
+    players[index].score+=value;
+
+    if(players[index].score<0)
+        players[index].score=0;
+
+    if(players[index].score>99)
+        players[index].score=99;
+
+    sortPlayers();
+
+}
+
+function renamePlayer(index,text){
+
+    players[index].name=text;
+
+    save();
+
+}
+
+function deletePlayer(index){
+
+    if(confirm("Eintrag löschen?")){
+
+        players.splice(index,1);
+
+        sortPlayers();
+
+    }
+
+}
+
+function resetAll(){
+
+    if(confirm("Alles löschen?")){
+
+        players=[];
+
+        save();
+
+        render();
+
+    }
+
+}
+
+function sortPlayers(){
+
+    players.sort(function(a,b){
+
+        return b.score-a.score;
+
+    });
+
+    save();
+
+    render();
+
+}
+
+function render(){
+
+    const list=document.getElementById("list");
+
+    list.innerHTML="";
+
+    players.forEach(function(player,index){
+
+        let medal="";
+
+        if(index==0) medal="gold";
+        else if(index==1) medal="silver";
+        else if(index==2) medal="bronze";
+
+        list.innerHTML+=`
+
+<div class="row ${medal}">
+
+<div class="place">
+
+${index+1}.
+
+</div>
+
+<div class="player">
+
+<input
+value="${player.name}"
+onchange="renamePlayer(${index},this.value)">
+
+</div>
+
+<button
+class="small"
+onclick="changeScore(${index},-1)">
+
+-
+
+</button>
+
+<div class="score">
+
+${player.score}
+
+</div>
+
+<button
+class="small"
+onclick="changeScore(${index},1)">
+
++
+
+</button>
+
+<button
+class="small"
+onclick="deletePlayer(${index})">
+
+🗑️
+
+</button>
+
+</div>
+
+`;
+
+    });
+
+}
+
+load();
+
+</script>
+
+</body>
+
+</html>
+
+    
+
+    
+
+
